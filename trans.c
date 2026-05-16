@@ -63,38 +63,48 @@ int main(int argc, char *argv[])
 } // end main
 
 // create formatted text file for printing
+// create formatted text file for printing
 void textFile(FILE *readPtr)
 {
     FILE *writePtr; // accounts.txt file pointer
-    int result;     // used to test whether fread read any bytes
-    // create clientData with default information
     struct clientData client = {0, "", "", 0.0};
+    unsigned int i; // Loop variable for 100 accounts
 
-    // fopen opens the file; exits if file cannot be opened
     if ((writePtr = fopen("accounts.txt", "w")) == NULL)
     {
         puts("File could not be opened.");
-    } // end if
+    } 
     else
     {
         rewind(readPtr); // sets pointer to beginning of file
+        
+        // Headers writing to file and screen
         fprintf(writePtr, "%-10s%-16s%-11s%10s\n", "Acct", "First Name", "Last Name", "Balance");
+        printf("\n%-10s%-16s%-11s%10s\n", "Acct", "First Name", "Last Name", "Balance");
+        printf("--------------------------------------------------\n");
 
-        // copy all records from random-access file into text file
-        // copy all records from random-access file into text file
-        while (fread(&client, sizeof(struct clientData), 1, readPtr) == 1)
+        // COLLEGE LOGIC: Simply loop from record 1 to 100 sequentially
+        for (i = 1; i <= 100; i++)
         {
-            // Andha duplicate result line-ah thookiyachu!
+            // Read each record one by one
+            fread(&client, sizeof(struct clientData), 1, readPtr);
 
-            if (client.acctNum > 0 && client.acctNum <= 100)
+            // If account has data, print with names
+            if (client.acctNum != 0)
             {
-                // %-10s ah %-10u nu mathiyachu, steady performance dynamic text!
-                fprintf(writePtr, "%-10u%-16s%-11s%10.2f\n", client.acctNum, client.firstName, client.lastName,
-                        client.balance);
-            } // end if
-        } // end while
+                fprintf(writePtr, "%-10u%-16s%-11s%10.2f\n", client.acctNum, client.firstName, client.lastName, client.balance);
+                printf("%-10u%-16s%-11s%10.2f\n", client.acctNum, client.firstName, client.lastName, client.balance);
+            }
+            // If account is blank, print just the account number and 0.00
+            else
+            {
+                fprintf(writePtr, "%-10u%-16s%-11s%10.2f\n", i, "", "", 0.00);
+                printf("%-10u%-16s%-11s%10.2f\n", i, "", "", 0.00);
+            }
+        } // end for
 
-        fclose(writePtr); // fclose closes the file
+        fclose(writePtr); 
+        printf("--------------------------------------------------\n");
         printf("Your accounts.txt created successfully.\n");
     } // end else
 } // end function textFile
