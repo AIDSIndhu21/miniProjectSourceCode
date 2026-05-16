@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     unsigned int choice; // user's choice
 
     // fopen opens the file; exits if file cannot be opened
-    if ((cfPtr = fopen("credit.dat", "rb+")) == NULL)
+    if ((cfPtr = fopen("credit.dat", "wb+")) == NULL)
     {
         printf("%s: File could not be opened.\n", argv[0]);
         exit(-1);
@@ -78,22 +78,24 @@ void textFile(FILE *readPtr)
     else
     {
         rewind(readPtr); // sets pointer to beginning of file
-        fprintf(writePtr, "%-10s%-16s%-11s%10s\n", "Acct", "Last Name", "First Name", "Balance");
+        fprintf(writePtr, "%-10s%-16s%-11s%10s\n", "Acct", "First Name", "Last Name", "Balance");
 
+        // copy all records from random-access file into text file
         // copy all records from random-access file into text file
         while (fread(&client, sizeof(struct clientData), 1, readPtr) == 1)
         {
-            result = fread(&client, sizeof(struct clientData), 1, readPtr);
+            // Andha duplicate result line-ah thookiyachu!
 
             if (client.acctNum > 0 && client.acctNum <= 100)
             {
-                fprintf(writePtr, "%-10s%-16s%-11s%10.2f\n", client.acctNum, client.lastName, client.firstName,
+                // %-10s ah %-10u nu mathiyachu, steady performance dynamic text!
+                fprintf(writePtr, "%-10u%-16s%-11s%10.2f\n", client.acctNum, client.firstName, client.lastName,
                         client.balance);
             } // end if
         } // end while
 
         fclose(writePtr); // fclose closes the file
-        printf("Your accounts.txt created successfully.");
+        printf("Your accounts.txt created successfully.\n");
     } // end else
 } // end function textFile
 
@@ -119,19 +121,19 @@ void updateRecord(FILE *fPtr)
         printf("Account #%d has no information.\n", account);
     }
     else
-    { // update record
-        printf("%-6d%-16s%-11s%10.2f\n", client.acctNum, client.lastName, client.firstName, client.balance);
+    {
+        printf("%-6u%-16s%-11s%10.2f\n", client.acctNum, client.firstName, client.lastName, client.balance);
 
         // request transaction amount from user
         printf("%s", "Enter charge ( + ) or payment ( - ): ");
         scanf("%lf", &transaction);
         client.balance += transaction; // update record balance
 
-        printf("%-6d%-16s%-11s%10.2f\n", client.acctNum, client.lastName, client.firstName, client.balance);
+        printf("%-6u%-16s%-11s%10.2f\n", client.acctNum, client.firstName, client.lastName, client.balance);
 
         // move file pointer to correct record in file
         // move back by 1 record length
-        fseek(fPtr, (account - 1) * sizeof(struct clientData), SEEK_CUR);
+        fseek(fPtr, (client.acctNum - 1) * sizeof(struct clientData), SEEK_SET);
         // write updated record over old record in file
         fwrite(&client, sizeof(struct clientData), 1, fPtr);
         printf("Account updated successfully\n");
@@ -188,20 +190,22 @@ void newRecord(FILE *fPtr)
     {
         printf("Account #%d already contains information.\n", client.acctNum);
     } // end if
-    else
+   else
     { // create record
-        // user enters last name, first name and balance
-        printf("%s", "Enter lastname, firstname, balance\n? ");
-        scanf("%14s%9s%lf", client.lastName, client.firstName, &client.balance);
+        // user enters first name, last name and balance
+        printf("%s", "Enter firstname, lastname, balance\n? ");
+        
+        // CHANGED: %9s first for firstName, then %14s for lastName
+        scanf("%9s%14s%lf", client.firstName, client.lastName, &client.balance);
 
         client.acctNum = accountNum;
         // move file pointer to correct record in file
         fseek(fPtr, (client.acctNum - 1) * sizeof(struct clientData), SEEK_SET);
         // insert record in file
         fwrite(&client, sizeof(struct clientData), 1, fPtr);
-        printf("New account created successfully");
+        printf("\nNew account created successfully\n");
     } // end else
-} // end function newRecord
+}
 
 // enable user to input menu choice
 unsigned int enterChoice(void)

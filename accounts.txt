@@ -1,4 +1,1 @@
-Acct      Last Name       First Name    Balance
-1        LUNA            S              199.00
-2         S               LUNA           190.00
-2         S               LUNA           200.00
+Acct      First Name      Last Name     Balance
